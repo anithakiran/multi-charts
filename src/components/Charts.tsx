@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Define the type for each data point
+// Define Type for Data
 interface ChartData {
   name: string;
   returns: number;
@@ -20,6 +20,7 @@ interface ChartData {
   subscriptions: number;
 }
 
+// Sample Data
 const data: ChartData[] = [
   { name: "Jan", returns: 30000, sales: 25000, subscriptions: 15000 },
   { name: "Feb", returns: 32000, sales: 27000, subscriptions: 16000 },
@@ -28,48 +29,72 @@ const data: ChartData[] = [
   { name: "May", returns: 40000, sales: 33000, subscriptions: 20000 },
 ];
 
+// Reusable Stat Box Component
+const StatBox = ({
+  title,
+  value,
+  percentage,
+}: {
+  title: string;
+  value: number;
+  percentage: string;
+}) => (
+  <div className="flex flex-col items-center p-4 bg-gray-800 shadow rounded-lg">
+    <p className="text-gray-300 font-semibold">{title}</p>
+    <p className="py-2 text-xl font-bold text-white">
+      ${value.toLocaleString()}
+    </p>
+    <p className={`text-${percentage.startsWith("-") ? "red" : "green"}-400`}>
+      {percentage.startsWith("-") ? "" : "+"}
+      {percentage}%
+    </p>
+  </div>
+);
+
 const Charts: React.FC = () => {
+  // Calculate Percentage Change
+  const calcPercentage = (key: keyof ChartData): string => {
+    if (data.length < 2) return "0";
+    const firstValue = data[0][key];
+    const lastValue = data[data.length - 1][key];
+    return (((lastValue - firstValue) / firstValue) * 100).toFixed(1);
+  };
+
   return (
     <>
       {/* Top Stats Section */}
       <section>
-        <div className="grid grid-cols-4 gap-4 m-4">
-          {[
-            { title: "Total Returns", key: "returns" },
-            { title: "Total Sales", key: "sales" },
-            { title: "Total Subscriptions", key: "subscriptions" },
-            { title: "Total Revenue", key: "returns" },
-          ].map((item, index) => (
-            <div
-              key={index}
-              className="flex flex-col items-center p-4 bg-gray-800 shadow rounded-lg"
-            >
-              <p className="text-gray-300 font-semibold">{item.title}</p>
-              <p className="py-2 text-xl font-bold text-white">
-                ${data[data.length - 1][item.key as keyof ChartData]}
-              </p>
-              <p className="text-green-400">
-                +
-                {data.length > 1
-                  ? (
-                      ((Number(
-                        data[data.length - 1][item.key as keyof ChartData]
-                      ) -
-                        Number(data[0][item.key as keyof ChartData])) /
-                        Number(data[0][item.key as keyof ChartData])) *
-                      100
-                    ).toFixed(1)
-                  : "0"}
-                %
-              </p>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 m-4">
+          <StatBox
+            title="Total Returns"
+            value={data[data.length - 1].returns}
+            percentage={calcPercentage("returns")}
+          />
+          <StatBox
+            title="Total Sales"
+            value={data[data.length - 1].sales}
+            percentage={calcPercentage("sales")}
+          />
+          <StatBox
+            title="Total Subscriptions"
+            value={data[data.length - 1].subscriptions}
+            percentage={calcPercentage("subscriptions")}
+          />
+          <StatBox
+            title="Total Revenue"
+            value={
+              data[data.length - 1].returns +
+              data[data.length - 1].sales +
+              data[data.length - 1].subscriptions
+            }
+            percentage={calcPercentage("returns")}
+          />
         </div>
       </section>
 
       {/* Two Large Charts */}
-      <section className="flex my-4 px-4 gap-4">
-        <div className="w-1/2 h-[300px] bg-gray-800 rounded-lg shadow p-4">
+      <section className="flex flex-wrap my-4 px-4 gap-4">
+        <div className="w-full md:w-1/2 h-[300px] bg-gray-800 rounded-lg shadow p-4">
           <h3 className="text-white mb-2">Returns Over Time</h3>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
@@ -87,7 +112,7 @@ const Charts: React.FC = () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="w-1/2 h-[300px] bg-gray-800 rounded-lg shadow p-4">
+        <div className="w-full md:w-1/2 h-[300px] bg-gray-800 rounded-lg shadow p-4">
           <h3 className="text-white mb-2">Sales Over Time</h3>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
@@ -107,8 +132,8 @@ const Charts: React.FC = () => {
       </section>
 
       {/* Three Smaller Charts */}
-      <section className="flex my-4 px-4 gap-4">
-        <div className="w-1/3 h-[250px] bg-gray-800 rounded-lg shadow p-4">
+      <section className="flex flex-wrap my-4 px-4 gap-4">
+        <div className="w-full sm:w-1/3 h-[250px] bg-gray-800 rounded-lg shadow p-4">
           <h3 className="text-white mb-2">Subscriptions</h3>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
@@ -121,7 +146,7 @@ const Charts: React.FC = () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="w-1/3 h-[250px] bg-gray-800 rounded-lg shadow p-4">
+        <div className="w-full sm:w-1/3 h-[250px] bg-gray-800 rounded-lg shadow p-4">
           <h3 className="text-white mb-2">Revenue</h3>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
@@ -134,7 +159,7 @@ const Charts: React.FC = () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="w-1/3 h-[250px] bg-gray-800 rounded-lg shadow p-4">
+        <div className="w-full sm:w-1/3 h-[250px] bg-gray-800 rounded-lg shadow p-4">
           <h3 className="text-white mb-2">Sales vs Returns</h3>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
